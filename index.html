@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高数可视化探索器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h1>高数可视化探索器</h1>
+        </header>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="panel-header">
+                    <i class="fas fa-sliders"></i>
+                    <h2>控制面板</h2>
+                </div>
+
+                <div class="input-group">
+                    <label for="function-input">
+                        <i class="fas fa-function"></i>
+                        函数表达式:
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="text" id="function-input" placeholder="例如: sin(x) * cos(y)">
+                    </div>
+
+                    <label for="dimension-select">
+                        <i class="fas fa-cube"></i>
+                        维度选择:
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="dimension-select">
+                            <option value="3d">3D 图像</option>
+                            <option value="2d">2D 图像</option>
+                        </select>
+                    </div>
+
+                    <button id="render-btn">
+                        <i class="fas fa-play"></i>
+                        渲染函数
+                    </button>
+                </div>
+
+                <div class="examples">
+                    <h3><i class="fas fa-lightbulb"></i> 示例函数:</h3>
+                    <div class="example-buttons">
+                        <button class="example-btn" data-func="sin(x) * cos(y)" data-dim="3d">sin(x) * cos(y)</button>
+                        <button class="example-btn" data-func="x^2 + y^2" data-dim="3d">x² + y²</button>
+                        <button class="example-btn" data-func="sin(x*y)" data-dim="3d">sin(x*y)</button>
+                        <button class="example-btn" data-func="sin(x)" data-dim="2d">sin(x)</button>
+                        <button class="example-btn" data-func="x^2" data-dim="2d">x²</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visualization">
+                <div class="visualization-header">
+                    <i class="fas fa-chart-area"></i>
+                    <h2>函数可视化</h2>
+                </div>
+                <div id="canvas-container"></div>
+                <div class="instructions">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <p>操作指南: 鼠标拖动旋转, 滚轮缩放, Shift+拖动平移</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><i class="fas fa-code"></i> 高数可视化探索器 - 基于 Three.js 的数学函数可视化工具</p>
+        </footer>
+    </div>
+
+    <!-- 引入库 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjs@11.0.0/lib/browser/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tweenjs/tween.js@18.6.4/dist/tween.umd.js"></script>
+
+    <!-- 引入自定义脚本 -->
+    <script src="./js/app.js"></script>
+</body>
+</html>
