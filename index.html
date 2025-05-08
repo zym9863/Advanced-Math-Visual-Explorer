@@ -23,40 +23,140 @@
                     <h2>控制面板</h2>
                 </div>
 
-                <div class="input-group">
-                    <label for="function-input">
-                        <i class="fas fa-function"></i>
-                        函数表达式:
-                    </label>
-                    <div class="input-wrapper">
-                        <input type="text" id="function-input" placeholder="例如: sin(x) * cos(y)">
-                    </div>
-
-                    <label for="dimension-select">
-                        <i class="fas fa-cube"></i>
-                        维度选择:
-                    </label>
-                    <div class="select-wrapper">
-                        <select id="dimension-select">
-                            <option value="3d">3D 图像</option>
-                            <option value="2d">2D 图像</option>
-                        </select>
-                    </div>
-
-                    <button id="render-btn">
-                        <i class="fas fa-play"></i>
-                        渲染函数
-                    </button>
+                <!-- 视图类型选择选项卡 -->
+                <div class="view-tabs">
+                    <button class="view-tab active" data-view="function">函数绘制</button>
+                    <button class="view-tab" data-view="calculus">微积分模拟</button>
                 </div>
 
-                <div class="examples">
-                    <h3><i class="fas fa-lightbulb"></i> 示例函数:</h3>
-                    <div class="example-buttons">
-                        <button class="example-btn" data-func="sin(x) * cos(y)" data-dim="3d">sin(x) * cos(y)</button>
-                        <button class="example-btn" data-func="x^2 + y^2" data-dim="3d">x² + y²</button>
-                        <button class="example-btn" data-func="sin(x*y)" data-dim="3d">sin(x*y)</button>
-                        <button class="example-btn" data-func="sin(x)" data-dim="2d">sin(x)</button>
-                        <button class="example-btn" data-func="x^2" data-dim="2d">x²</button>
+                <!-- 函数绘制面板 -->
+                <div class="view-panel" id="function-panel">
+                    <div class="input-group">
+                        <label for="function-input">
+                            <i class="fas fa-function"></i>
+                            函数表达式:
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="function-input" placeholder="例如: sin(x) * cos(y)">
+                        </div>
+
+                        <label for="dimension-select">
+                            <i class="fas fa-cube"></i>
+                            维度选择:
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="dimension-select">
+                                <option value="3d">3D 图像</option>
+                                <option value="2d">2D 图像</option>
+                            </select>
+                        </div>
+
+                        <button id="render-btn">
+                            <i class="fas fa-play"></i>
+                            渲染函数
+                        </button>
+                    </div>
+
+                    <div class="examples">
+                        <h3><i class="fas fa-lightbulb"></i> 示例函数:</h3>
+                        <div class="example-buttons">
+                            <button class="example-btn" data-func="sin(x) * cos(y)" data-dim="3d">sin(x) * cos(y)</button>
+                            <button class="example-btn" data-func="x^2 + y^2" data-dim="3d">x² + y²</button>
+                            <button class="example-btn" data-func="sin(x*y)" data-dim="3d">sin(x*y)</button>
+                            <button class="example-btn" data-func="sin(x)" data-dim="2d">sin(x)</button>
+                            <button class="example-btn" data-func="x^2" data-dim="2d">x²</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 微积分模拟面板 -->
+                <div class="view-panel" id="calculus-panel" style="display: none;">
+                    <div class="input-group">
+                        <label for="calculus-function-input">
+                            <i class="fas fa-function"></i>
+                            函数表达式:
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="calculus-function-input" placeholder="例如: x^2">
+                        </div>
+
+                        <label for="calculus-concept-select">
+                            <i class="fas fa-graduation-cap"></i>
+                            概念选择:
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="calculus-concept-select">
+                                <option value="limit">极限过程</option>
+                                <option value="derivative">导数</option>
+                                <option value="integral">定积分</option>
+                            </select>
+                        </div>
+
+                        <div class="parameter-controls">
+                            <!-- 极限参数 -->
+                            <div class="concept-params" id="limit-params">
+                                <label for="limit-point">
+                                    <i class="fas fa-arrows-alt-h"></i>
+                                    极限点 a:
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="limit-point" value="0" step="0.1">
+                                </div>
+                            </div>
+
+                            <!-- 导数参数 -->
+                            <div class="concept-params" id="derivative-params" style="display: none;">
+                                <label for="derivative-point">
+                                    <i class="fas fa-arrows-alt-h"></i>
+                                    计算点 x₀:
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="derivative-point" value="0" step="0.1">
+                                </div>
+                            </div>
+
+                            <!-- 定积分参数 -->
+                            <div class="concept-params" id="integral-params" style="display: none;">
+                                <label for="integral-start">
+                                    <i class="fas fa-arrow-right"></i>
+                                    下限 a:
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="integral-start" value="-1" step="0.1">
+                                </div>
+                                <label for="integral-end">
+                                    <i class="fas fa-arrow-right"></i>
+                                    上限 b:
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="integral-end" value="1" step="0.1">
+                                </div>
+                                <label for="integral-steps">
+                                    <i class="fas fa-stream"></i>
+                                    分割数:
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="integral-steps" value="10" min="1" max="100" step="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="simulate-btn">
+                            <i class="fas fa-play"></i>
+                            开始模拟
+                        </button>
+                    </div>
+
+                    <div class="examples">
+                        <h3><i class="fas fa-lightbulb"></i> 微积分示例:</h3>
+                        <div class="example-buttons calculus-examples">
+                            <button class="calculus-example-btn" data-func="x^2" data-concept="limit" data-point="0">x² 在 0 处的极限</button>
+                            <button class="calculus-example-btn" data-func="sin(x)/x" data-concept="limit" data-point="0">sin(x)/x 在 0 处的极限</button>
+                            <button class="calculus-example-btn" data-func="x^2" data-concept="derivative" data-point="1">x² 在点 1 的导数</button>
+                            <button class="calculus-example-btn" data-func="sin(x)" data-concept="derivative" data-point="0">sin(x) 在点 0 的导数</button>
+                            <button class="calculus-example-btn" data-func="x^2" data-concept="integral" data-start="0" data-end="1" data-steps="20">x² 在 [0,1] 的积分</button>
+                            <button class="calculus-example-btn" data-func="sin(x)" data-concept="integral" data-start="0" data-end="3.14159" data-steps="20">sin(x) 在 [0,π] 的积分</button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -463,3 +463,203 @@ button.loading {
         max-width: calc(100% - 20px);
     }
 }
+
+/* 视图类型选择选项卡 */
+.view-tabs {
+    display: flex;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.view-tab {
+    flex: 1;
+    padding: 12px 0;
+    border: none;
+    background-color: transparent;
+    color: var(--text-color);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.view-tab.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.view-tab:hover:not(.active) {
+    background-color: rgba(67, 97, 238, 0.1);
+}
+
+/* 微积分参数控制区域 */
+.parameter-controls {
+    margin-top: 15px;
+    background-color: rgba(0, 0, 0, 0.02);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.concept-params label {
+    font-size: 0.9rem;
+    margin-top: 8px;
+}
+
+.concept-params input[type="number"] {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: var(--transition);
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.concept-params input[type="number"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+
+/* 微积分示例按钮样式 */
+.calculus-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.calculus-example-btn {
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+    border: 1px solid rgba(67, 97, 238, 0.2);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.calculus-example-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.calculus-example-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 微积分可视化元素 */
+.calculus-visual-element {
+    position: absolute;
+    transition: var(--transition);
+    pointer-events: none;
+}
+
+.limit-point, .derivative-point, .integral-rect {
+    opacity: 0.7;
+}
+
+.limit-point.highlight, .derivative-point.highlight, .integral-rect.highlight {
+    opacity: 1;
+}
+
+.calculus-label {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+    pointer-events: none;
+}
+
+/* 动画控制 */
+.animation-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.animation-btn {
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+    border: 1px solid rgba(67, 97, 238, 0.2);
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.animation-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.animation-btn i {
+    margin-right: 5px;
+}
+
+/* 播放速度控制 */
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.speed-label {
+    font-size: 0.8rem;
+    color: var(--text-color);
+    margin-right: 5px;
+}
+
+/* 动画进度条 */
+.progress-container {
+    width: 100%;
+    height: 4px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--primary-color);
+    width: 0;
+    transition: width 0.1s linear;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .view-tab {
+        font-size: 0.9rem;
+        padding: 10px 0;
+    }
+
+    .calculus-example-btn {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+
+    .animation-controls {
+        flex-wrap: wrap;
+    }
+}

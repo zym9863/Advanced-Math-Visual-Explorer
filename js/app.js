@@ -625,5 +625,310 @@ function render2DFunction(functionExpr) {
 }
 
 
+/* =============================
+   微积分模拟：极限、导数、定积分
+   ============================= */
+// UI 联动与事件初始化
+function initCalculusPanel() {
+    // 选项卡切换
+    const tabs = document.querySelectorAll('.view-tab');
+    const panels = document.querySelectorAll('.view-panel');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function () {
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.style.display = 'none');
+            this.classList.add('active');
+            const view = this.getAttribute('data-view');
+            document.getElementById(view + '-panel').style.display = '';
+        });
+    });
+
+    // 概念参数面的切换
+    const conceptSelect = document.getElementById('calculus-concept-select');
+    const conceptParams = {
+        limit: document.getElementById('limit-params'),
+        derivative: document.getElementById('derivative-params'),
+        integral: document.getElementById('integral-params'),
+    };
+    function updateConceptParamsDisplay() {
+        const type = conceptSelect.value;
+        for (const [key, el] of Object.entries(conceptParams)) {
+            el.style.display = (key === type) ? '' : 'none';
+        }
+    }
+    conceptSelect.addEventListener('change', updateConceptParamsDisplay);
+    updateConceptParamsDisplay();
+
+    // 微积分示例按钮事件
+    document.querySelectorAll('.calculus-example-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.getElementById('calculus-function-input').value = btn.getAttribute('data-func');
+            conceptSelect.value = btn.getAttribute('data-concept');
+            updateConceptParamsDisplay();
+            // 填充参数
+            if (btn.getAttribute('data-concept') === 'limit') {
+                document.getElementById('limit-point').value = btn.getAttribute('data-point') ?? 0;
+            }
+            if (btn.getAttribute('data-concept') === 'derivative') {
+                document.getElementById('derivative-point').value = btn.getAttribute('data-point') ?? 0;
+            }
+            if (btn.getAttribute('data-concept') === 'integral') {
+                document.getElementById('integral-start').value = btn.getAttribute('data-start') ?? -1;
+                document.getElementById('integral-end').value = btn.getAttribute('data-end') ?? 1;
+                document.getElementById('integral-steps').value = btn.getAttribute('data-steps') ?? 10;
+            }
+        });
+    });
+
+    // 主模拟按钮事件
+    document.getElementById('simulate-btn').addEventListener('click', function () {
+        // 添加加载动画等
+        this.classList.add('loading');
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 模拟中...';
+        setTimeout(() => {
+            runCalculusSimulation().then(() => {
+                this.classList.remove('loading');
+                this.innerHTML = '<i class="fas fa-play"></i> 开始模拟';
+            });
+        }, 100);
+    });
+}
+
+// 入口函数：根据概念选择执行对应模拟
+async function runCalculusSimulation() {
+    // 清理旧内容
+    if (currentMesh) {
+        scene.remove(currentMesh);
+        currentMesh = null;
+    }
+
+    const exprStr = document.getElementById('calculus-function-input').value.trim();
+    const concept = document.getElementById('calculus-concept-select').value;
+    if (!exprStr) {
+        showNotification('请输入函数表达式', 'warning');
+        return;
+    }
+    try {
+        let expr = math.compile(exprStr);
+
+        if (concept === 'limit') {
+            const a = parseFloat(document.getElementById('limit-point').value);
+            await simulateLimit(expr, a);
+        }
+        else if (concept === 'derivative') {
+            const x0 = parseFloat(document.getElementById('derivative-point').value);
+            await simulateDerivative(expr, x0);
+        }
+        else if (concept === 'integral') {
+            const a = parseFloat(document.getElementById('integral-start').value);
+            const b = parseFloat(document.getElementById('integral-end').value);
+            const n = parseInt(document.getElementById('integral-steps').value);
+            await simulateIntegral(expr, a, b, n);
+        }
+    } catch (e) {
+        showNotification('表达式无效或参数有误', 'error');
+    }
+}
+
+// 极限可视化：逼近过程
+async function simulateLimit(expr, a) {
+    // 准备：2D 展示
+    resetCamera2D();
+    // 设置区间 [-3+a, 3+a]
+    let xmin = a - 3, xmax = a + 3, seg = 200;
+    // 生成曲线
+    const points = [];
+    for (let i = 0; i <= seg; i++) {
+        let x = xmin + (xmax - xmin) * i / seg;
+        let y = safeEval(expr, x);
+        points.push(new THREE.Vector3(x, y, 0));
+    }
+    const color = 0x4361ee;
+    const curveLine = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(points),
+        new THREE.LineBasicMaterial({ color, linewidth: 2 })
+    );
+
+    // 初始化逼近点
+    const markerGeom = new THREE.SphereGeometry(0.09, 16, 16);
+    const markerMat = new THREE.MeshBasicMaterial({ color: 0xeb5e28 });
+    const marker = new THREE.Mesh(markerGeom, markerMat);
+
+    // 极限点 a 的虚线
+    const aLineGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(a, -50, 0), new THREE.Vector3(a, 50, 0)
+    ]);
+    const aLine = new THREE.Line(aLineGeom, new THREE.LineDashedMaterial({color: 0x000, dashSize: 0.15, gapSize: 0.15}));
+    aLine.computeLineDistances();
+
+    // 群组
+    currentMesh = new THREE.Group();
+    currentMesh.add(curveLine);
+    currentMesh.add(marker);
+    currentMesh.add(aLine);
+
+    scene.add(currentMesh);
+
+    // 动画逼近
+    let steps = 42, delay = 25;
+    for (let i = 0; i <= steps; i++) {
+        let t = i / steps;
+        // marker 从左->a->右
+        let from = xmin + 0.15, to = xmax - 0.15;
+        let x = from * (1 - t) + to * t;
+        if (t < 0.5) x = from + (a - from) * (t / 0.5);
+        else x = a + (to - a) * ((t - 0.5) / 0.5);
+        let y = safeEval(expr, x);
+        marker.position.set(x, y, 0);
+        await sleep(delay + Math.floor(24 * Math.sin(t * Math.PI)));
+    }
+    showNotification(`极限过程模拟完成 (x→${a})`, 'success');
+}
+
+// 导数可视化——割线->切线的极限
+async function simulateDerivative(expr, x0) {
+    resetCamera2D();
+    // 区间
+    let xmin = x0-3, xmax = x0+3, seg = 200;
+    const points = [];
+    for (let i = 0; i <= seg; i++) {
+        let x = xmin + (xmax - xmin) * i / seg;
+        let y = safeEval(expr, x);
+        points.push(new THREE.Vector3(x, y, 0));
+    }
+    const curveLine = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(points),
+        new THREE.LineBasicMaterial({ color: 0x4361ee, linewidth: 2 })
+    );
+
+    // 两点 (x0, f(x0)) 和 (x0+h, f(x0+h))
+    const hInit = 2.2, hFinal = 0.12, steps = 42, delay = 25;
+    let marker1 = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), new THREE.MeshBasicMaterial({color: 0xeb5e28}));
+    let marker2 = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), new THREE.MeshBasicMaterial({color: 0xfdc500}));
+    let secant, tangent;
+    let group = new THREE.Group();
+    group.add(curveLine);
+    group.add(marker1);
+    group.add(marker2);
+
+    scene.add(group);
+    currentMesh = group;
+
+    for (let i = 0; i <= steps; i++) {
+        let th = i / steps;
+        let h = hInit * (1 - th) + hFinal * th;
+        // 刷新 secant line
+        if (secant) group.remove(secant);
+        const p1 = new THREE.Vector3(x0, safeEval(expr, x0), 0);
+        const p2 = new THREE.Vector3(x0 + h, safeEval(expr, x0 + h), 0);
+        marker1.position.set(p1.x, p1.y, 0);
+        marker2.position.set(p2.x, p2.y, 0);
+        const secantGeom = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+        secant = new THREE.Line(secantGeom, new THREE.LineDashedMaterial({color: 0x385f71, dashSize: 0.22, gapSize:0.1}));
+        secant.computeLineDistances();
+        group.add(secant);
+        await sleep(delay + Math.floor(24 * Math.abs(Math.sin(th * Math.PI))));
+        group.remove(secant);
+    }
+    // 最后显示切线
+    const f0 = safeEval(expr, x0);
+    const dfdx = numericalDerivative(expr, x0);
+    const tangentGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x0 - 2, f0 - 2 * dfdx, 0),
+        new THREE.Vector3(x0 + 2, f0 + 2 * dfdx, 0)
+    ]);
+    tangent = new THREE.Line(tangentGeom, new THREE.LineBasicMaterial({ color: 0xff2e63, linewidth: 3 }));
+    group.add(tangent);
+    showNotification(`导数过程模拟完成 (x=${x0})`, 'success');
+}
+
+// 定积分可视化：Riemann 和近似
+async function simulateIntegral(expr, a, b, n) {
+    resetCamera2D();
+    // 区间
+    let xmin = Math.min(a, b) - 1.2, xmax = Math.max(a, b) + 1.2, seg = 200;
+    const points = [];
+    for (let i = 0; i <= seg; i++) {
+        let x = xmin + (xmax - xmin) * i / seg;
+        let y = safeEval(expr, x);
+        points.push(new THREE.Vector3(x, y, 0));
+    }
+    const curveLine = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(points),
+        new THREE.LineBasicMaterial({ color: 0x4361ee, linewidth: 2 })
+    );
+    // 面积条 group
+    const barGroup = new THREE.Group();
+
+    // 积分区间高亮
+    const regionGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(a, -50, 0), new THREE.Vector3(a, 50, 0),
+        new THREE.Vector3(b, -50, 0), new THREE.Vector3(b, 50, 0)
+    ]);
+    const regionLines = new THREE.LineSegments(regionGeom, new THREE.LineDashedMaterial({ color: 0x888, dashSize: 0.18, gapSize: 0.22}));
+    regionLines.computeLineDistances();
+
+    // 集合
+    let group = new THREE.Group();
+    group.add(curveLine);
+    group.add(regionLines);
+    group.add(barGroup);
+    scene.add(group);
+    currentMesh = group;
+
+    // 逐步生成面积条
+    let delta = (b - a) / n;
+    let delay = 30;
+    for (let i = 0; i < n; i++) {
+        let xleft = a + i * delta;
+        let xright = xleft + delta;
+        let xmid = (xleft + xright) / 2;
+        let y = safeEval(expr, xmid);
+        // 条绘制
+        let barGeom = new THREE.BoxGeometry(delta * 0.94, Math.abs(y), 0.07);
+        let barMat = new THREE.MeshBasicMaterial({ color: 0x6a4cff, opacity: 0.7, transparent: true });
+        let bar = new THREE.Mesh(barGeom, barMat);
+        bar.position.set(xmid, y / 2, 0.01 * i);
+        barGroup.add(bar);
+        await sleep(delay + Math.floor(16 * Math.cos(i / n * Math.PI)));
+    }
+    // 最后面积文字
+    let S = 0;
+    for (let i = 0; i < n; i++) {
+        let xmid = a + (i + 0.5) * delta;
+        let y = safeEval(expr, xmid);
+        S += y * delta;
+    }
+    showNotification(`积分模拟完成，数值近似 ≈ ${S.toFixed(4)}`, 'success');
+}
+
+// 公共：2D相机位复用
+function resetCamera2D() {
+    new TWEEN.Tween(camera.position)
+        .to({ x: 0, y: 0, z: 15 }, 620)
+        .easing(TWEEN.Easing.Cubic.Out)
+        .start();
+    new TWEEN.Tween(controls.target)
+        .to({ x: 0, y: 0, z: 0 }, 620)
+        .easing(TWEEN.Easing.Cubic.Out)
+        .onUpdate(() => controls.update())
+        .start();
+}
+// 求数值导数
+function numericalDerivative(expr, x, h=1e-4) {
+    return (safeEval(expr, x+h) - safeEval(expr, x-h)) / (2 * h);
+}
+// 保险计算
+function safeEval(expr, x) {
+    try { return expr.evaluate({ x }); } catch { return NaN; }
+}
+// sleep
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // 页面加载完成后初始化应用
-window.addEventListener('DOMContentLoaded', init);
+window.addEventListener('DOMContentLoaded', () => {
+    init();
+    initCalculusPanel();
+});
